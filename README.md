@@ -1,0 +1,1 @@
+example: python3 tracert.py 8.8.8.8 --no-dns
