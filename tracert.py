@@ -1,9 +1,9 @@
-from icmplib import ping, multiping, traceroute, resolve
+from icmplib import ping, multiping, traceroute, resolve, exceptions
 from icmplib.sockets import ICMPv4Socket, ICMPv6Socket
 from icmplib.models import ICMPRequest
 from icmplib.exceptions import TimeExceeded, ICMPLibError
 from time import sleep
-from icmplib.utils import unique_identifier, is_hostname, is_ipv6_address
+from icmplib.utils import unique_identifier, is_hostname, is_ipv6_address, is_ipv4_address
 from dns import reversename, resolver
 import argparse
 
@@ -22,13 +22,21 @@ host = args.host
 no_dns = args.no_dns
 
 if is_hostname(host):
-    ip = resolve(host, family)[0]
+    try:
+        ip = resolve(host)[0]
+    except exceptions.NameLookupError:
+        print("Cannot resolve host")
+        quit(-1)
 else:
     ip = host
-if is_ipv6_address(host):
+
+if is_ipv6_address(ip):
     _Socket = ICMPv6Socket
-else:
+elif is_ipv4_address(ip):
     _Socket = ICMPv4Socket
+else:
+    print("Not a valid host or IP")
+    quit(-1)
 
 timeout = 0.05
 max_hops = 30
